@@ -1,0 +1,10 @@
+:host {
+  display: block;
+  padding: 1rem;
+}
+
+.button-delete {
+  background: red;
+  border: 1px solid red;
+  margin-left: 1rem;
+}

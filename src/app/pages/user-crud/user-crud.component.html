@@ -1,0 +1,177 @@
+<div class="p-4 animate__animated animate__fadeIn">
+  <h2
+    class="text-xl font-bold mb-4 text-green-500 animate__animated animate__bounceIn"
+  >
+    Gestión de Usuarios
+  </h2>
+  <button
+    pButton
+    type="button"
+    label="Nuevo Usuario"
+    icon="pi pi-plus"
+    class="mb-4"
+    (click)="openNew()"
+  ></button>
+  <p-table [value]="users" [paginator]="true" [rows]="5">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Nombre</th>
+        <th>Fecha Nac.</th>
+        <th>Profesión</th>
+        <th>Nacionalidad</th>
+        <th>Teléfono</th>
+        <th>Correo</th>
+        <th>Sueldo</th>
+        <th>Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-user>
+      <tr>
+        <td>{{ user.name }}</td>
+        <td>{{ user.birth_date | date : "shortDate" }}</td>
+        <td>{{ user.profession }}</td>
+        <td>{{ user.nationality }}</td>
+        <td>{{ user.phone }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.salary | currency : "USD" }}</td>
+        <td>
+          <button
+            pButton
+            icon="pi pi-pencil"
+            class="mr-4"
+            (click)="editUser(user)"
+          ></button>
+          <button
+            pButton
+            icon="pi pi-trash"
+            class="button-delete"
+            (click)="deleteUser(user.id)"
+          ></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    header="Nuevo Usuario"
+    [(visible)]="displayModal"
+    [modal]="true"
+    [style.width]="'600px'"
+    [breakpoints]="{ '768px': '90vw' }"
+  >
+  <form #userForm="ngForm" (ngSubmit)="saveUser(userForm)" novalidate>
+
+    <div class="p-fluid formgrid grid p-4">
+      <div class="field col-12 md:col-6 mb-3">
+        <label for="nombre">Nombre</label>
+        <input
+          id="nombre"
+          type="text"
+          pInputText
+          required
+          name="name"
+          [(ngModel)]="user.name"
+          placeholder="Nombre"
+        />
+        <small *ngIf="userForm.submitted && !user.name" class="p-error">El nombre es obligatorio</small>
+      </div>
+
+      <div class="field col-12 md:col-6 mb-3">
+        <label for="fecha">Fecha de nacimiento</label>
+        <p-calendar
+          id="fecha"
+          [(ngModel)]="user.birth_date"
+          [showIcon]="true"
+          appendTo="body"
+          name="birth_date" [required]="true"
+        ></p-calendar>
+        <small *ngIf="userForm.submitted && !user.birth_date" class="p-error">La fecha es obligatoria</small>
+      </div>
+
+      <div class="field col-12 md:col-6 mb-3">
+        <label for="profesion">Profesión</label>
+        <p-dropdown
+          id="profesion"
+          [options]="professionOptions"
+          [(ngModel)]="user.profession"
+          placeholder="Seleccione profesión"
+          appendTo="body"
+          name="profession" [required]="true"
+        ></p-dropdown>
+        <small *ngIf="userForm.submitted && !user.profession" class="p-error">La profesión es obligatoria</small>
+      </div>
+
+      <div class="field col-12 md:col-6 mb-3">
+        <label for="nacionalidad">Nacionalidad</label>
+        <p-dropdown
+          id="nacionalidad"
+          [options]="nationalityOptions"
+          [(ngModel)]="user.nationality"
+          placeholder="Seleccione nacionalidad"
+          appendTo="body"
+          name="nationality" [required]="true"
+          (onChange)="onNationalityChange($event.value)"
+        ></p-dropdown>
+         <small *ngIf="userForm.submitted && !user.nationality" class="p-error">La nacionalidad es obligatoria</small>
+      </div>
+
+      <div class="field col-12 md:col-6 mb-3">
+        <label for="telefono">Teléfono</label>
+        <p-dropdown
+          [options]="phoneOptions"
+          [(ngModel)]="user.phoneCode"
+          placeholder="Código telefónico"
+          [disabled]="true"
+          name="phoneCode"
+        >
+        </p-dropdown>
+        <input
+          id="telefono"
+          type="text"
+          pInputText
+          [(ngModel)]="user.phone"
+          placeholder="Teléfono"
+          name="phone" required
+        />
+        <small *ngIf="userForm.submitted && !user.phone" class="p-error">El teléfono es obligatorio</small>
+      </div>
+
+      <div class="field col-12 md:col-6 mb-3">
+        <label for="correo">Correo</label>
+        <input
+          id="correo"
+          type="email"
+          pInputText
+          [(ngModel)]="user.email"
+          placeholder="Correo"
+          name="email" required
+        />
+        <small *ngIf="userForm.submitted && !user.email" class="p-error">El correo es obligatorio</small>
+      </div>
+
+      <div class="field col-12 md:col-6 mb-3">
+        <label for="salario">Salario</label>
+        <p-inputNumber
+          id="salario"
+          [(ngModel)]="user.salary"
+          mode="currency"
+          name="salary"
+          currency="USD"
+          [minFractionDigits]="2" [required]="true"
+        ></p-inputNumber>
+         <small *ngIf="userForm.submitted && !user.salary" class="p-error">El salario es obligatorio</small>
+      </div>
+
+      <br />
+      <div class="col-12 flex justify-content-end mt-3">
+        <button
+          pButton
+          label="Guardar"
+          type="submit"
+          class="p-button-success"
+        ></button>
+      </div>
+    </div>
+    </form>
+  </p-dialog>
+</div>
