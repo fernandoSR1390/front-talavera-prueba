@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { Component, inject, OnInit } from '@angular/core';
-import { FormsModule, NgForm } from '@angular/forms';
+import { AfterViewInit, Component, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { FormsModule, NgForm, ReactiveFormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
@@ -9,13 +9,13 @@ import { DialogModule } from 'primeng/dialog';
 import { CalendarModule } from 'primeng/calendar';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { DropdownModule } from 'primeng/dropdown';
-import { ToastModule } from 'primeng/toast';
 import * as nationalities from 'i18n-nationality';
 import es from 'i18n-nationality/langs/es.json';
-import { profesiones } from '../../data/profesiones';
 import Swal from 'sweetalert2';
 import { phoneCodeMap } from '../../data/telefono-codigos';
+import { profesiones } from '../../data/profesiones';
 
+declare const intlTelInput: any;
 @Component({
   selector: 'app-user-crud',
   standalone: true,
@@ -30,14 +30,18 @@ import { phoneCodeMap } from '../../data/telefono-codigos';
     CalendarModule,
     InputNumberModule,
     DropdownModule,
-    ToastModule,
+    ReactiveFormsModule
   ],
   templateUrl: './user-crud.component.html',
   styleUrl: './user-crud.component.css',
 })
-export class UserCrudComponent implements OnInit {
+export class UserCrudComponent implements OnInit, AfterViewInit  {
   private http = inject(HttpClient);
   private urlBackend = 'http://localhost:3000/api/users';
+
+  @ViewChild('phoneInput', { static: true }) phoneInputRef!: ElementRef;
+  itiInstance: any;
+  internationalNumber = signal<string>('');
 
   users: any[] = [];
   user: any = {};
@@ -71,6 +75,24 @@ export class UserCrudComponent implements OnInit {
     this.loadUsers();
   }
 
+  ngAfterViewInit(): void {
+    this.itiInstance = intlTelInput(this.phoneInputRef.nativeElement, {
+      initialCountry: 'bo',
+      preferredCountries: ['bo', 'us', 'mx'],
+      utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@17.0.19/build/js/utils.js',
+    });
+
+    this.phoneInputRef.nativeElement.addEventListener('change', () => {
+      if (this.itiInstance.isValidNumber()) {
+        console.log("Número: ", this.itiInstance.getNumber());
+
+        this.internationalNumber.set(this.itiInstance.getNumber());
+      } else {
+        this.internationalNumber.set('');
+      }
+    });
+  }
+
   loadUsers() {
     this.http.get<any[]>(this.urlBackend).subscribe((data) => {
       this.users = data;
@@ -78,12 +100,12 @@ export class UserCrudComponent implements OnInit {
   }
 
   saveUser(form: NgForm) {
-    if (form.invalid) {
+    if (form.invalid && !this.itiInstance.isValidNumber()) {
       return; // No envía si el formulario es inválido
     }
 
     // Combinar código y número en el formato final
-    this.user.phone = `${this.user.phoneCode} ${this.user.phone}`;
+    this.user.phone = `+${this.itiInstance.s.dialCode} ${this.user.phone}`;
 
     if (this.user.id) {
       this.http
@@ -120,6 +142,11 @@ export class UserCrudComponent implements OnInit {
       birth_date: new Date(u.birth_date), // 👈 conversión aquí
     };
 
+    const matched = phoneCodeMap.find(p => p.callingCode === code);
+    if (matched && this.itiInstance) {
+      this.itiInstance.setCountry(matched.code.toLowerCase());
+    }
+
     this.displayModal = true;
   }
 
@@ -154,6 +181,9 @@ export class UserCrudComponent implements OnInit {
     );
     if (matched) {
       this.user.phoneCode = matched.callingCode;
+      if (this.itiInstance) {
+        this.itiInstance.setCountry(matched.code.toLowerCase());
+      }
     } else {
       this.user.phoneCode = '';
     }

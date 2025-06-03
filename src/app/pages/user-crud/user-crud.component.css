@@ -9,6 +9,12 @@
   margin-left: 1rem;
 }
 
+:host ::ng-deep .iti {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
 @media (max-width: 768px) {
   :host {
     padding: 0.5rem;

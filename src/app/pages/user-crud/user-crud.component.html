@@ -28,7 +28,7 @@
     <ng-template pTemplate="body" let-user>
       <tr>
         <td>{{ user.name }}</td>
-        <td>{{ user.birth_date | date : "shortDate" }}</td>
+        <td>{{ user.birth_date | date : "dd/MM/yyyy" }}</td>
         <td>{{ user.profession }}</td>
         <td>{{ user.nationality }}</td>
         <td>{{ user.phone }}</td>
@@ -116,22 +116,15 @@
       </div>
 
       <div class="field col-12 md:col-6 mb-3">
-        <label for="telefono">Teléfono</label>
-        <p-dropdown
-          [options]="phoneOptions"
-          [(ngModel)]="user.phoneCode"
-          placeholder="Código telefónico"
-          [disabled]="true"
-          name="phoneCode"
-        >
-        </p-dropdown>
+        <label for="telefono" class="block mb-2">Teléfono</label>
         <input
           id="telefono"
-          type="text"
+          type="number"
+          #phoneInput
           pInputText
           [(ngModel)]="user.phone"
           placeholder="Teléfono"
-          name="phone" required
+          name="phone" required class="w-full"
         />
         <small *ngIf="userForm.submitted && !user.phone" class="p-error">El teléfono es obligatorio</small>
       </div>
